@@ -1,0 +1,24 @@
+{
+  "application": {
+    "packageName": "com.demo",
+    "icon": "icon.png",
+    "name": "demo",
+    "versionCode": "",
+    "versionName": "",
+    "mainPage": "App.vue",
+    "pages": [
+      {
+        "name": "App.vue"
+      },
+      {
+        "name": "ButtonDemo.vue"
+      },
+      {
+        "name": "CheckboxDemo.vue"
+      },
+      {
+        "name": "RadioDemo.vue"
+      }
+    ]
+  }
+}
