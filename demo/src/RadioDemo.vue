@@ -48,9 +48,9 @@ const items = [
   ]
 
 const picArray = [
-  'assets/radio-uncheck.png',
-  'assets/radio-checked.png',
-  'assets/radio-disable.png']
+  'radio-uncheck.png',
+  'radio-checked.png',
+  'radio-disable.png']
 
 import {Radio, RadioGroup} from 'lynx-components'
 

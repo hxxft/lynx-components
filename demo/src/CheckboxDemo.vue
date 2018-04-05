@@ -46,9 +46,9 @@ const items =  [
 ]
 
 const picArray = [
-  'assets/checkbox-check.png',
-  'assets/checkbox-uncheck.png',
-  'assets/checkbox-disable.png']
+  'checkbox-check.png',
+  'checkbox-uncheck.png',
+  'checkbox-disable.png']
 
 import {Checkbox,CheckboxGroup}  from 'lynx-components'
 
