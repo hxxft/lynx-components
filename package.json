@@ -1,6 +1,6 @@
 {
   "name": "lynx-components",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Components for Lynx",
   "main": "index.js",
   "scripts": {

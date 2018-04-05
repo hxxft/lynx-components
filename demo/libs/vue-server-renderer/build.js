@@ -5195,7 +5195,7 @@ function getStyleString (vnode) {
 
   var preStyles = getStaticStyles(null, vnode);
   preStyles = extend(preStyles, getUpdateStyles(null, vnode));
-  if(vnode.data.parentStaticStyle)
+  if(vnode.data && vnode.data.parentStaticStyle)
     { preStyles = extend(preStyles, vnode.data.parentStaticStyle); }
   if (Object.keys(preStyles) && Object.keys(preStyles).length > 0) {
     var preStylesString = '';
