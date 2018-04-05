@@ -1,11 +1,12 @@
 {
+  "debug": true,
   "application": {
     "packageName": "com.demo",
     "icon": "icon.png",
     "name": "demo",
     "versionCode": "",
     "versionName": "",
-    "mainPage": "App.vue",
+    "mainPage": "HomeDemo.vue",
     "pages": [
       {
         "name": "App.vue"
@@ -18,6 +19,21 @@
       },
       {
         "name": "RadioDemo.vue"
+      },
+      {
+        "name": "SwiperDemo.vue"
+      },
+      {
+        "name": "HomeDemo.vue"
+      },
+      {
+        "name": "GalleryDemo.vue"
+      },
+      {
+        "name": "CoordinatorDemo.vue"
+      },
+      {
+        "name": "CanvasDemo.vue"
       }
     ]
   }
