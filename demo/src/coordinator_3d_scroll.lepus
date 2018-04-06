@@ -1,0 +1,230 @@
+var kMinScale = 0.8
+var kMaxScale = 1
+var kMarginLeft = 40
+var kImgWidth = 450
+var kTotalNum = 4
+var kScrollWrapTag = 'scrollWrap'
+var kFirstBgImgTag = 'firstBgImg'
+var kSecondBgImgTag = 'secondBgImg'
+var kThirdBgImgTag = 'thirdBgImg'
+var kFirstItemTag = 'item0'
+var kSecondItemTag = 'item1'
+var kThirdItemTag = 'item2'
+var kFourthItemTag = 'item3'
+var kTouchSlop = 10
+var kDuration = 300
+// per second
+var kFlingVelocity = 1000
+var kMaxMoveX = (kImgWidth - kMarginLeft) * kTotalNum
+var kMinMoveX = (kImgWidth - kMarginLeft) * -1
+var kEventName = "onpagechanged"
+
+var preIndex = 0
+var curIndex = 0
+var startTouchX = 0
+var startTouchY = 0
+var curTouchX = 0
+var totalMoveX = 0
+var preTotalMoveX = 0
+var curTouchType = 0
+var ratioOfNextIndex = 0
+var toNextIndex = 0
+var touchDownTime = 0
+var isAllowScroll = false
+var curPage = 0
+
+var toNextPageIndex = 0
+
+function init(tag) {
+  if (tag !== kFirstItemTag
+        && tag !== kScrollWrapTag
+        && tag !== kFirstBgImgTag
+        && tag !== kSecondBgImgTag
+        && tag !== kThirdBgImgTag) {
+      setScaleX(kMinScale)
+      setScaleY(kMinScale)
+  }
+  if (tag === kSecondBgImgTag || tag === kThirdBgImgTag) {
+      setOpacity(0)
+  }
+}
+
+function onDispatchTouchEvent(tag, type, touchX, touchY, timeStamp) {
+    curTouchX = touchX
+    curTouchType = type
+    switch (type) {
+      case 0:
+          touchDownTime = timeStamp
+          startTouchX = touchX
+          setConsumed(true)
+          isAllowScroll = false
+          break
+      case 1:
+      case 3:
+          if (isAllowScroll) {
+              var offsetX = totalMoveX - (kImgWidth + kMarginLeft) * curIndex
+              // Caculate if fling
+              var initialVelocity = (touchX - startTouchX) / ((timeStamp - touchDownTime) / 1000)
+              var isFling = false
+              if (initialVelocity < 0) {
+                isFling = -initialVelocity / ((timeStamp - touchDownTime) / 1000) > kFlingVelocity
+              } else {
+                isFling = initialVelocity / ((timeStamp - touchDownTime) / 1000) > kFlingVelocity
+              }
+              if (isFling) {
+                  if (initialVelocity < 0)
+                    toNextIndex = curIndex + 1
+                  else
+                    toNextIndex = curIndex
+              } else if (offsetX > (kImgWidth + kMarginLeft) / 2) {
+                toNextIndex = curIndex + 1
+              } else {
+                toNextIndex = curIndex
+              }
+              if (toNextIndex < 0) toNextIndex = 0
+              if (toNextIndex > kTotalNum - 1) toNextIndex = kTotalNum - 1
+              totalMoveX = toNextIndex * (kImgWidth + kMarginLeft)
+              preTotalMoveX = totalMoveX
+              curIndex = toNextIndex
+              console.log(toNextIndex)
+          }
+          break
+      case 2:
+          if (curTouchX - startTouchX > kTouchSlop || startTouchX - curTouchX > kTouchSlop) {
+
+              totalMoveX = -(curTouchX - startTouchX) + preTotalMoveX
+              if (totalMoveX > kMaxMoveX) totalMoveX = kMaxMoveX
+              if (totalMoveX < kMinMoveX) totalMoveX = kMinMoveX
+              preIndex = curIndex
+              curIndex = totalMoveX / (kImgWidth + kMarginLeft)
+              curIndex = Math.floor(curIndex)
+              var offsetX = totalMoveX - (kImgWidth + kMarginLeft) * curIndex
+              ratioOfNextIndex = offsetX / (kImgWidth + kMarginLeft)
+              isAllowScroll = true
+          } else {
+              isAllowScroll = false
+          }
+          setConsumed(isAllowScroll)
+          break
+      default:
+          break
+    }
+}
+
+function onTouchEventForWrap(tag, touchX, touchY) {
+    if (isAllowScroll) {
+        if (curTouchType === 1 || curTouchType === 3) {
+            setDuration(kDuration)
+            dispatchEvent(kEventName, toNextIndex)
+        } else if (curTouchType === 2) {
+            var nextPage = curPage
+            if (totalMoveX )
+            if (nextPage !== curPage) {
+                curPage = nextPage
+                dispatchEvent(kEventName, curPage)
+            }
+        }
+    }
+}
+
+function onTouchEventForImg(tag, touchX, touchY) {
+    var itemIndex = 0
+    if (tag === kFirstItemTag) {
+        itemIndex = 0
+    } else if (tag === kSecondItemTag) {
+        itemIndex = 1
+    } else if (tag === kThirdItemTag) {
+        itemIndex = 2
+    } else if (tag === kFourthItemTag) {
+        itemIndex = 3
+    }
+    if (isAllowScroll) {
+        if (curTouchType === 2) {
+          setTranslateX(-totalMoveX)
+          if (curIndex + 1 === itemIndex) {
+            var scale = ratioOfNextIndex * (kMaxScale - kMinScale) + kMinScale
+            setScaleX(scale)
+            setScaleY(scale)
+          } else if (curIndex === itemIndex) {
+            var scale = (1 - ratioOfNextIndex) * (kMaxScale - kMinScale) + kMinScale
+            setScaleX(scale)
+            setScaleY(scale)
+          } else {
+            setScaleX(kMinScale)
+            setScaleY(kMinScale)
+          }
+        } else if (curTouchType === 1) {
+            setDuration(kDuration)
+            setTimingFunction("EASE_OUT")
+            setTranslateX(-totalMoveX)
+            if (toNextIndex === itemIndex) {
+              setScaleX(kMaxScale)
+              setScaleY(kMaxScale)
+            } else {
+              setScaleX(kMinScale)
+              setScaleY(kMinScale)
+            }
+        }
+    }
+}
+
+function onTouchEventForBg(tag, touchX, touchY) {
+    if (isAllowScroll) {
+        var opacity = 1
+        if (curTouchType === 2 && curIndex >= 0 && curIndex < kTotalNum - 1) {
+            var curShowBgIndex = curIndex % 3
+            if (curShowBgIndex === 0) { // FirstBgImg show
+                if (tag === kFirstBgImgTag) opacity = (1 - ratioOfNextIndex)
+                if (tag === kSecondBgImgTag) opacity = ratioOfNextIndex
+                if (tag === kThirdBgImgTag) opacity = 0
+            } else if (curShowBgIndex === 1) { // SecondBgImg show
+                if (tag === kFirstBgImgTag) opacity = 0
+                if (tag === kSecondBgImgTag) opacity = (1 - ratioOfNextIndex)
+                if (tag === kThirdBgImgTag) opacity = ratioOfNextIndex
+            } else if (curShowBgIndex === 2) { // ThirdBgImg show
+                if (tag === kFirstBgImgTag) opacity = ratioOfNextIndex
+                if (tag === kSecondBgImgTag) opacity = 0
+                if (tag === kThirdBgImgTag) opacity = (1 - ratioOfNextIndex)
+            }
+            setOpacity(opacity)
+        } else if (curTouchType === 1 && curIndex >= 0 && curIndex <= kTotalNum - 1) {
+            var curShowBgIndex = toNextIndex % 3
+            if (curShowBgIndex === 0) { // FirstBgImg show
+                if (tag === kFirstBgImgTag) opacity = 1
+                if (tag === kSecondBgImgTag) opacity = 0
+                if (tag === kThirdBgImgTag) opacity = 0
+            } else if (curShowBgIndex === 1) { // SecondBgImg show
+                if (tag === kFirstBgImgTag) opacity = 0
+                if (tag === kSecondBgImgTag) opacity = 1
+                if (tag === kThirdBgImgTag) opacity = 0
+            } else if (curShowBgIndex === 2) { // ThirdBgImg show
+                if (tag === kFirstBgImgTag) opacity = 0
+                if (tag === kSecondBgImgTag) opacity = 0
+                if (tag === kThirdBgImgTag) opacity = 1
+            }
+            setDuration(kDuration)
+            setOpacity(opacity)
+        }
+    }
+}
+
+function onPropertiesUpdated(tag) {
+    curIndex = toNextPageIndex
+    // Caculate next page index
+    toNextIndex = toNextPageIndex
+    if (toNextIndex < 0) toNextIndex = 0
+    if (toNextIndex > kTotalNum - 1) toNextIndex = kTotalNum - 1
+    totalMoveX = toNextIndex * (kImgWidth + kMarginLeft)
+    preTotalMoveX = totalMoveX
+    // mock touch end
+    curTouchType = 1
+    isAllowScroll = true
+    if (tag.indexOf('item') === 0) {
+        onTouchEventForImg(tag, 0, 0)
+    } else if (tag.indexOf('BgImg') >= 0) {
+        onTouchEventForBg(tag, 0, 0)
+    } else if (tag === 'scrollWrap') {
+        onTouchEventForWrap(tag, 0, 0)
+    }
+    isAllowScroll = false
+}
